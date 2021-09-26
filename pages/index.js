@@ -6,9 +6,8 @@ import { Container, VStack } from "@chakra-ui/layout";
 import Head from "next/head";
 import { useToast } from "@chakra-ui/react";
 import init, { transpile } from "../swc/pkg/swc_wasm";
+import { starterCode } from '../starter_code.ts'
 
-const starterCode = `// Write your code here
-console.log('Hello World');`;
 
 function formatOutput(output) {
   return output.toString().split(",").join("\n");

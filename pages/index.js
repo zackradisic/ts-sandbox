@@ -1,16 +1,17 @@
-import Editor from '@monaco-editor/react';
-import React, { useEffect } from 'react';
-import Script from 'next/script';
-import { Button } from '@chakra-ui/button';
-import { Container, VStack } from '@chakra-ui/layout';
-import Head from 'next/head';
-import { useToast } from '@chakra-ui/react';
+import Editor from "@monaco-editor/react";
+import React, { useEffect } from "react";
+import Script from "next/script";
+import { Button } from "@chakra-ui/button";
+import { Container, VStack } from "@chakra-ui/layout";
+import Head from "next/head";
+import { useToast } from "@chakra-ui/react";
+import init, { transpile } from "../swc/pkg/swc_wasm";
 
 const starterCode = `// Write your code here
 console.log('Hello World');`;
 
 function formatOutput(output) {
-  return output.toString().split(',').join('\n');
+  return output.toString().split(",").join("\n");
 }
 
 export default function Home() {
@@ -20,6 +21,11 @@ export default function Home() {
   const toast = useToast();
 
   useEffect(() => {
+    console.log(window.ts)
+    const initWasm = async () => {
+      await init();
+    };
+    initWasm();
     console.stdlog = console.log.bind(console);
     console.log = function () {
       setLogs((logs) => [...logs, Array.from(arguments)]);
@@ -34,15 +40,27 @@ export default function Home() {
   const compileAndExecute = React.useCallback(() => {
     clearLogs();
     const code = inputCode;
-    const jsCode = window.ts.transpile(code);
+    const start = Date.now();
+    const jsCode = transpile(code, {
+      jsc: {
+        parser: {
+          syntax: "typescript",
+        },
+        target: "es2020",
+      },
+      module: {
+        type: "es6",
+      },
+    });
+    console.log(`Elapsed: ${Date.now() - start} `);
     eval(jsCode);
   }, [inputCode, clearLogs]);
 
   const copyOutput = React.useCallback(() => {
     navigator.clipboard.writeText(formatOutput(logs));
     toast({
-      title: 'Output copied to clipboard.',
-      status: 'info',
+      title: "Output copied to clipboard.",
+      status: "info",
       duration: 3000,
       isClosable: true,
     });
@@ -55,9 +73,9 @@ export default function Home() {
       </Head>
       <Script
         onLoad={() => setCompilerReady(true)}
-        src='https://unpkg.com/typescript@latest/lib/typescriptServices.js'
+        src="https://unpkg.com/typescript@latest/lib/typescriptServices.js"
       />
-      <Container padding='5'>
+      <Container padding="5">
         <VStack
           spacing={4}
           onKeyUp={(e) => {
@@ -68,17 +86,17 @@ export default function Home() {
           }}
         >
           <Editor
-            height='50vh'
-            width='100%'
-            language='typescript'
+            height="50vh"
+            width="100%"
+            language="typescript"
             defaultValue={starterCode}
             value={inputCode}
             onChange={setInputCode}
-            theme='vs-dark'
+            theme="vs-dark"
           />
 
           <Button
-            backgroundColor='green.200'
+            backgroundColor="green.200"
             onClick={compileAndExecute}
             disabled={!compilerReady}
           >
@@ -87,10 +105,10 @@ export default function Home() {
 
           {logs && (
             <Editor
-              defaultValue='// Output will be shown here'
-              height='30vh'
+              defaultValue="// Output will be shown here"
+              height="30vh"
               value={formatOutput(logs)}
-              theme='vs-dark'
+              theme="vs-dark"
             />
           )}
 

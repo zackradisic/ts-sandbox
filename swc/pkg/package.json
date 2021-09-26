@@ -1,0 +1,15 @@
+{
+  "name": "swc_wasm",
+  "collaborators": [
+    "Zack Radisic <56137411+zackradisic@users.noreply.github.com>"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "swc_wasm_bg.wasm",
+    "swc_wasm.js",
+    "swc_wasm.d.ts"
+  ],
+  "module": "swc_wasm.js",
+  "types": "swc_wasm.d.ts",
+  "sideEffects": false
+}

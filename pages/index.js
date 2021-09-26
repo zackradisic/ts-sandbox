@@ -15,13 +15,14 @@ function formatOutput(output) {
 }
 
 export default function Home() {
+  const [transpiler, setTranspiler] = React.useState("swc");
   const [inputCode, setInputCode] = React.useState(starterCode);
   const [compilerReady, setCompilerReady] = React.useState(false);
   const [logs, setLogs] = React.useState([]);
   const toast = useToast();
 
   useEffect(() => {
-    console.log(window.ts)
+    console.log(window.ts);
     const initWasm = async () => {
       await init();
     };
@@ -41,20 +42,25 @@ export default function Home() {
     clearLogs();
     const code = inputCode;
     const start = Date.now();
-    const jsCode = transpile(code, {
-      jsc: {
-        parser: {
-          syntax: "typescript",
+    let jsCode = "";
+    if (transpiler === "swc") {
+      jsCode = transpile(code, {
+        jsc: {
+          parser: {
+            syntax: "typescript",
+          },
+          target: "es2020",
         },
-        target: "es2020",
-      },
-      module: {
-        type: "es6",
-      },
-    });
-    console.log(`Elapsed: ${Date.now() - start} `);
+        module: {
+          type: "es6",
+        },
+      });
+    } else {
+      jsCode = window.ts.transpile(code);
+    }
+    console.log(`(${transpiler}) Elapsed: ${Date.now() - start} `);
     eval(jsCode);
-  }, [inputCode, clearLogs]);
+  }, [inputCode, clearLogs, transpiler]);
 
   const copyOutput = React.useCallback(() => {
     navigator.clipboard.writeText(formatOutput(logs));
@@ -101,6 +107,13 @@ export default function Home() {
             disabled={!compilerReady}
           >
             Run
+          </Button>
+          <Button
+            backgroundColor="green.200"
+            onClick={() => setTranspiler(transpiler === "swc" ? "tsc" : "swc")}
+            disabled={!compilerReady}
+          >
+            Switch to {transpiler === "swc" ? "tsc" : "swc"}
           </Button>
 
           {logs && (
